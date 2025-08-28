@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 하모니 생성기</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        
+        .range-value {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(31, 38, 135, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .generate-btn {
+            display: block;
+            margin: 30px auto;
+            font-size: 1.3em;
+            padding: 20px 40px;
+        }
+        
+        .player-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .part-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .part-control {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .part-control h4 {
+            margin: 0 0 10px 0;
+            color: #feca57;
+            text-transform: capitalize;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .volume-control input {
+            flex: 1;
+        }
+        
+        .play-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .play-controls button {
+            margin: 0 10px;
+        }
+        
+        #visualizer {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #feca57;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4CAF50;
+        }
+        
+        .info {
+            background: rgba(33, 150, 243, 0.2);
+            border-color: #2196F3;
+        }
+        
+        #harmonyInfo {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .download-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 AI 하모니 생성기 🎵</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="keySelect">조 (Key)</label>
+                <select id="keySelect">
+                    <option value="0">C</option>
+                    <option value="1">C#/Db</option>
+                    <option value="2">D</option>
+                    <option value="3">D#/Eb</option>
+                    <option value="4">E</option>
+                    <option value="5">F</option>
+                    <option value="6">F#/Gb</option>
+                    <option value="7">G</option>
+                    <option value="8">G#/Ab</option>
+                    <option value="9">A</option>
+                    <option value="10">A#/Bb</option>
+                    <option value="11">B</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="scaleSelect">스케일 (Scale)</label>
+                <select id="scaleSelect">
+                    <option value="major">Major (장조)</option>
+                    <option value="minor">Minor (단조)</option>
+                    <option value="pentatonic_major">Pentatonic Major</option>
+                    <option value="pentatonic_minor">Pentatonic Minor</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="lengthSlider">멜로디 길이: <span id="lengthValue">32</span>박</label>
+                <input type="range" id="lengthSlider" min="16" max="64" value="32">
+            </div>
+            
+            <div class="control-group">
+                <label for="chordLengthSlider">화음 길이: <span id="chordLengthValue">8</span>박</label>
+                <input type="range" id="chordLengthSlider" min="4" max="16" value="8">
+            </div>
+            
+            <div class="control-group">
+                <label for="tempoSlider">템포: <span id="tempoValue">120</span> BPM</label>
+                <input type="range" id="tempoSlider" min="60" max="180" value="120">
+            </div>
+        </div>
+        
+        <button class="generate-btn" onclick="generateHarmony()">🎼 하모니 생성하기</button>
+        
+        <div id="loadingDiv" class="loading" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            하모니를 생성하고 있습니다...
+        </div>
+        
+        <div id="statusDiv" class="status" style="display: none;"></div>
+        
+        <div class="player-section" id="playerSection" style="display: none;">
+            <h3>🎹 하모니 플레이어</h3>
+            
+            <div class="part-controls">
+                <div class="part-control">
+                    <h4>Soprano</h4>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="sopranoVolume" min="0" max="100" value="80">
+                        <span id="sopranoVolumeValue">80</span>
+                    </div>
+                    <button onclick="playSolo('soprano')">Solo</button>
+                </div>
+                
+                <div class="part-control">
+                    <h4>Alto</h4>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="altoVolume" min="0" max="100" value="80">
+                        <span id="altoVolumeValue">80</span>
+                    </div>
+                    <button onclick="playSolo('alto')">Solo</button>
+                </div>
+                
+                <div class="part-control">
+                    <h4>Tenor</h4>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="tenorVolume" min="0" max="100" value="80">
+                        <span id="tenorVolumeValue">80</span>
+                    </div>
+                    <button onclick="playSolo('tenor')">Solo</button>
+                </div>
+                
+                <div class="part-control">
+                    <h4>Bass</h4>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="bassVolume" min="0" max="100" value="80">
+                        <span id="bassVolumeValue">80</span>
+                    </div>
+                    <button onclick="playSolo('bass')">Solo</button>
+                </div>
+            </div>
+            
+            <div class="play-controls">
+                <button onclick="playHarmony()">▶️ 전체 재생</button>
+                <button onclick="stopHarmony()">⏹️ 정지</button>
+                <button onclick="pauseHarmony()">⏸️ 일시정지</button>
+            </div>
+            
+            <canvas id="visualizer"></canvas>
+            
+            <div class="download-section">
+                <button class="download-btn" onclick="downloadMIDI()">💾 MIDI 다운로드</button>
+                <button class="download-btn" onclick="downloadWAV()">🎵 WAV 다운로드</button>
+            </div>
+        </div>
+        
+        <div id="harmonyInfo" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Web Audio API 설정
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let currentHarmony = null;
+        let isPlaying = false;
+        let currentGainNodes = {};
+        let currentOscillators = [];
+        let playTimeout = null;
+
+        // UI 컨트롤 이벤트 리스너
+        document.getElementById('lengthSlider').addEventListener('input', function() {
+            document.getElementById('lengthValue').textContent = this.value;
+        });
+        
+        document.getElementById('chordLengthSlider').addEventListener('input', function() {
+            document.getElementById('chordLengthValue').textContent = this.value;
+        });
+        
+        document.getElementById('tempoSlider').addEventListener('input', function() {
+            document.getElementById('tempoValue').textContent = this.value;
+        });
+
+        // 볼륨 컨트롤 이벤트 리스너
+        ['soprano', 'alto', 'tenor', 'bass'].forEach(part => {
+            document.getElementById(part + 'Volume').addEventListener('input', function() {
+                document.getElementById(part + 'VolumeValue').textContent = this.value;
+                if (currentGainNodes[part]) {
+                    currentGainNodes[part].gain.value = this.value / 100;
+                }
+            });
+        });
+
+        // 음악 이론 클래스들 (JavaScript 버전)
+        class Note {
+            constructor(pitch, duration, velocity = 80) {
+                this.pitch = pitch;
+                this.duration = duration;
+                this.velocity = velocity;
+            }
+        }
+
+        class Chord {
+            constructor(notes, root, chordType) {
+                this.notes = notes;
+                this.root = root;
+                this.chordType = chordType;
+            }
+        }
+
+        class MusicTheory {
+            static MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11];
+            static MINOR_SCALE = [0, 2, 3, 5, 7, 8, 10];
+            static PENTATONIC_MAJOR = [0, 2, 4, 7, 9];
+            static PENTATONIC_MINOR = [0, 3, 5, 7, 10];
+
+            static CHORD_INTERVALS = {
+                'major': [0, 4, 7],
+                'minor': [0, 3, 7],
+                'dim': [0, 3, 6],
+                'aug': [0, 4, 8],
+                'maj7': [0, 4, 7, 11],
+                'min7': [0, 3, 7, 10],
+                'dom7': [0, 4, 7, 10]
+            };
+
+            static getChordNotes(root, chordType, octave = 4) {
+                const intervals = this.CHORD_INTERVALS[chordType] || [0, 4, 7];
+                const baseNote = root + octave * 12;
+                return intervals.map(interval => baseNote + interval);
+            }
+
+            static getScaleNotes(root, scaleType, octave = 4) {
+                let intervals;
+                switch(scaleType) {
+                    case 'major': intervals = this.MAJOR_SCALE; break;
+                    case 'minor': intervals = this.MINOR_SCALE; break;
+                    case 'pentatonic_major': intervals = this.PENTATONIC_MAJOR; break;
+                    case 'pentatonic_minor': intervals = this.PENTATONIC_MINOR; break;
+                    default: intervals = this.MAJOR_SCALE;
+                }
+                
+                const baseNote = root + octave * 12;
+                return intervals.map(interval => baseNote + interval);
+            }
+
+            static isConsonant(note1, note2) {
+                const interval = Math.abs(note1 - note2) % 12;
+                const consonantIntervals = [0, 3, 4, 5, 7, 8, 9];
+                return consonantIntervals.includes(interval);
+            }
+        }
+
+        class HarmonyGenerator {
+            constructor(key = 0, scale = 'major') {
+                this.key = key;
+                this.scale = scale;
+                
+                this.instrumentRanges = {
+                    'soprano': [60, 84],
+                    'alto': [55, 79],
+                    'tenor': [48, 72],
+                    'bass': [40, 64]
+                };
+            }
+
+            generateChordProgression(length = 8) {
+                const progression = [];
+                
+                // 첫 화음은 토닉으로 시작
+                const rootChord = new Chord(
+                    MusicTheory.getChordNotes(this.key, this.scale === 'major' ? 'major' : 'minor', 4),
+                    this.key,
+                    this.scale === 'major' ? 'major' : 'minor'
+                );
+                progression.push(rootChord);
+
+                // 나머지 화음들 생성
+                for (let i = 1; i < length; i++) {
+                    const chordRoot = (this.key + MusicTheory.MAJOR_SCALE[Math.floor(Math.random() * MusicTheory.MAJOR_SCALE.length)]) % 12;
+                    const chordType = this.scale === 'major' ? 'major' : 'minor';
+                    const notes = MusicTheory.getChordNotes(chordRoot, chordType, 4);
+                    progression.push(new Chord(notes, chordRoot, chordType));
+                }
+
+                return progression;
+            }
+
+            generateMelodyForInstrument(chordProgression, instrument, length = 32) {
+                const melody = [];
+                const [minPitch, maxPitch] = this.instrumentRanges[instrument];
+                
+                const scaleNotes = [];
+                for (let octave = 2; octave <= 6; octave++) {
+                    const notes = MusicTheory.getScaleNotes(this.key, this.scale, octave);
+                    scaleNotes.push(...notes.filter(note => note >= minPitch && note <= maxPitch));
+                }
+
+                if (scaleNotes.length === 0) {
+                    // 폴백: 기본 음역대
+                    for (let i = minPitch; i <= maxPitch; i++) {
+                        scaleNotes.push(i);
+                    }
+                }
+
+                const durations = [0.5, 1.0, 1.5, 2.0];
+                
+                for (let i = 0; i < length; i++) {
+                    const pitch = scaleNotes[Math.floor(Math.random() * scaleNotes.length)];
+                    const duration = durations[Math.floor(Math.random() * durations.length)];
+                    const velocity = 60 + Math.random() * 40;
+                    
+                    melody.push(new Note(pitch, duration, velocity));
+                }
+
+                return melody;
+            }
+
+            generateFourPartHarmony(length = 32, chordLength = 8) {
+                const chordProgression = this.generateChordProgression(chordLength);
+                const parts = {};
+                
+                const instruments = ['soprano', 'alto', 'tenor', 'bass'];
+                
+                for (const instrument of instruments) {
+                    parts[instrument] = this.generateMelodyForInstrument(chordProgression, instrument, length);
+                }
+
+                return parts;
+            }
+
+            evaluateHarmonyQuality(parts) {
+                const validParts = Object.entries(parts).filter(([_, notes]) => notes && notes.length > 0);
+                if (validParts.length < 2) return 0;
+
+                const maxLength = Math.max(...validParts.map(([_, notes]) => notes.length));
+                let consonantCount = 0;
+                let totalPairs = 0;
+
+                for (let i = 0; i < maxLength; i++) {
+                    const currentNotes = [];
+                    
+                    for (const [_, notes] of validParts) {
+                        if (i < notes.length && notes[i].pitch !== undefined) {
+                            currentNotes.push(notes[i].pitch);
+                        }
+                    }
+
+                    if (currentNotes.length >= 2) {
+                        for (let j = 0; j < currentNotes.length; j++) {
+                            for (let k = j + 1; k < currentNotes.length; k++) {
+                                totalPairs++;
+                                if (MusicTheory.isConsonant(currentNotes[j], currentNotes[k])) {
+                                    consonantCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return totalPairs > 0 ? consonantCount / totalPairs : 0;
+            }
+        }
+
+        // MIDI 변환 함수
+        function midiToFreq(midiNote) {
+            return 440 * Math.pow(2, (midiNote - 69) / 12);
+        }
+
+        function midiToNoteName(midiNumber) {
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(midiNumber / 12) - 1;
+            const note = noteNames[midiNumber % 12];
+            return `${note}${octave}`;
+        }
+
+        // 오디오 재생 함수들
+        function createOscillator(frequency, startTime, duration, gainNode) {
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, startTime);
+            
+            // ADSR 엔벨로프
+            const attackTime = 0.1;
+            const decayTime = 0.1;
+            const sustainLevel = 0.7;
+            const releaseTime = 0.2;
+            
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(0.8, startTime + attackTime);
+            gainNode.gain.linearRampToValueAtTime(sustainLevel, startTime + attackTime + decayTime);
+            gainNode.gain.setValueAtTime(sustainLevel, startTime + duration - releaseTime);
+            gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+            
+            oscillator.connect(gainNode);
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+            
+            return oscillator;
+        }
+
+        function playPart(partNotes, partName, startTime = 0, volumeMultiplier = 1) {
+            const masterGain = audioContext.createGain();
+            masterGain.gain.value = volumeMultiplier * 0.1;
+            masterGain.connect(audioContext.destination);
+            
+            currentGainNodes[partName] = masterGain;
+            
+            const beatDuration = 60 / parseInt(document.getElementById('tempoValue').textContent);
+            let currentTime = audioContext.currentTime + startTime;
+            
+            partNotes.forEach(note => {
+                if (note.pitch && note.duration) {
+                    const frequency = midiToFreq(note.pitch);
+                    const duration = note.duration * beatDuration;
+                    
+                    const noteGain = audioContext.createGain();
+                    noteGain.connect(masterGain);
+                    
+                    const oscillator = createOscillator(frequency, currentTime, duration, noteGain);
+                    currentOscillators.push(oscillator);
+                    
+                    currentTime += duration;
+                }
+            });
+            
+            return currentTime - audioContext.currentTime - startTime;
+        }
+
+        function stopAllOscillators() {
+            currentOscillators.forEach(osc => {
+                try {
+                    osc.stop();
+                } catch (e) {
+                    // 이미 정지된 오실레이터 무시
+                }
+            });
+            currentOscillators = [];
+            currentGainNodes = {};
+            
+            if (playTimeout) {
+                clearTimeout(playTimeout);
+                playTimeout = null;
+            }
+        }
+
+        // 인터페이스 함수들
+        async function generateHarmony() {
+            const loadingDiv = document.getElementById('loadingDiv');
+            const statusDiv = document.getElementById('statusDiv');
+            const playerSection = document.getElementById('playerSection');
+            const harmonyInfo = document.getElementById('harmonyInfo');
+            const progressFill = document.getElementById('progressFill');
+
+            // UI 초기화
+            loadingDiv.style.display = 'block';
+            statusDiv.style.display = 'none';
+            playerSection.style.display = 'none';
+            harmonyInfo.style.display = 'none';
+            progressFill.style.width = '0%';
+
+            try {
+                // Web Audio 컨텍스트 활성화
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+
+                // 설정 값들 가져오기
+                const key = parseInt(document.getElementById('keySelect').value);
+                const scale = document.getElementById('scaleSelect').value;
+                const length = parseInt(document.getElementById('lengthSlider').value);
+                const chordLength = parseInt(document.getElementById('chordLengthSlider').value);
+
+                progressFill.style.width = '20%';
+
+                // 하모니 생성기 초기화
+                const generator = new HarmonyGenerator(key, scale);
+                
+                progressFill.style.width = '40%';
+
+                // 여러 시도 중 최적 결과 선택
+                let bestHarmony = null;
+                let bestScore = 0;
+                const attempts = 3;
+
+                for (let attempt = 0; attempt < attempts; attempt++) {
+                    const harmony = generator.generateFourPartHarmony(length, chordLength);
+                    const score = generator.evaluateHarmonyQuality(harmony);
+                    
+                    if (score > bestScore) {
+                        bestHarmony = harmony;
+                        bestScore = score;
+                    }
+                    
+                    progressFill.style.width = `${40 + (attempt + 1) * 20}%`;
+                }
+
+                currentHarmony = bestHarmony;
+
+                // 결과 표시
+                loadingDiv.style.display = 'none';
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        ✅ 하모니 생성 완료!<br>
+                        품질 점수: ${(bestScore * 100).toFixed(1)}/100
+                    </div>
+                `;
+                statusDiv.style.display = 'block';
+                
+                playerSection.style.display = 'block';
+                
+                // 하모니 정보 표시
+                displayHarmonyInfo(bestHarmony, generator);
+                
+                // 시각화 업데이트
+                visualizeHarmony(bestHarmony);
+
+            } catch (error) {
+                console.error('하모니 생성 중 오류:', error);
+                loadingDiv.style.display = 'none';
+                statusDiv.innerHTML = `
+                    <div style="background: rgba(244, 67, 54, 0.2); border-color: #f44336;">
+                        ❌ 하모니 생성 중 오류가 발생했습니다: ${error.message}
+                    </div>
+                `;
+                statusDiv.style.display = 'block';
+            }
+        }
+
+        function playHarmony() {
+            if (!currentHarmony) {
+                alert('먼저 하모니를 생성해주세요.');
+                return;
+            }
+
+            stopAllOscillators();
+            isPlaying = true;
+
+            const volumes = {
+                soprano: parseFloat(document.getElementById('sopranoVolume').value) / 100,
+                alto: parseFloat(document.getElementById('altoVolume').value) / 100,
+                tenor: parseFloat(document.getElementById('tenorVolume').value) / 100,
+                bass: parseFloat(document.getElementById('bassVolume').value) / 100
+            };
+
+            let maxDuration = 0;
+            
+            Object.entries(currentHarmony).forEach(([partName, notes]) => {
+                const duration = playPart(notes, partName, 0, volumes[partName]);
+                maxDuration = Math.max(maxDuration, duration);
+            });
+
+            // 재생 완료 후 정리
+            playTimeout = setTimeout(() => {
+                isPlaying = false;
+                stopAllOscillators();
+            }, maxDuration * 1000);
+        }
+
+        function playSolo(partName) {
+            if (!currentHarmony || !currentHarmony[partName]) {
+                alert('해당 파트를 찾을 수 없습니다.');
+                return;
+            }
+
+            stopAllOscillators();
+            
+            const volume = parseFloat(document.getElementById(partName + 'Volume').value) / 100;
+            const duration = playPart(currentHarmony[partName], partName, 0, volume);
+            
+            playTimeout = setTimeout(() => {
+                stopAllOscillators();
+            }, duration * 1000);
+        }
+
+        function stopHarmony() {
+            isPlaying = false;
+            stopAllOscillators();
+        }
+
+        function pauseHarmony() {
+            stopHarmony(); // 간단한 구현으로 정지 기능과 동일하게 처리
+        }
+
+        function visualizeHarmony(harmony) {
+            const canvas = document.getElementById('visualizer');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const colors = {
+                soprano: '#ff6b6b',
+                alto: '#4ecdc4',
+                tenor: '#45b7d1',
+                bass: '#96ceb4'
+            };
+            
+            const instruments = ['soprano', 'alto', 'tenor', 'bass'];
+            let maxLength = 0;
+            let minPitch = 127, maxPitch = 0;
+            
+            // 범위 계산
+            instruments.forEach(inst => {
+                if (harmony[inst] && harmony[inst].length > 0) {
+                    maxLength = Math.max(maxLength, harmony[inst].length);
+                    harmony[inst].forEach(note => {
+                        if (note.pitch) {
+                            minPitch = Math.min(minPitch, note.pitch);
+                            maxPitch = Math.max(maxPitch, note.pitch);
+                        }
+                    });
+                }
+            });
+            
+            if (maxLength === 0) return;
+            
+            const xStep = canvas.width / maxLength;
+            const yRange = maxPitch - minPitch + 10;
+            const yScale = canvas.height / yRange;
+            
+            // 각 파트 그리기
+            instruments.forEach((inst, index) => {
+                if (!harmony[inst] || harmony[inst].length === 0) return;
+                
+                ctx.strokeStyle = colors[inst];
+                ctx.fillStyle = colors[inst];
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                let isFirst = true;
+                
+                harmony[inst].forEach((note, i) => {
+                    if (note.pitch) {
+                        const x = i * xStep + xStep / 2;
+                        const y = canvas.height - ((note.pitch - minPitch) * yScale + 20);
+                        
+                        if (isFirst) {
+                            ctx.moveTo(x, y);
+                            isFirst = false;
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                        
+                        // 음표 점 그리기
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                });
+                
+                ctx.stroke();
+            });
+            
+            // 범례 그리기
+            let legendY = 20;
+            instruments.forEach(inst => {
+                if (harmony[inst] && harmony[inst].length > 0) {
+                    ctx.fillStyle = colors[inst];
+                    ctx.fillRect(10, legendY, 15, 15);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(inst.charAt(0).toUpperCase() + inst.slice(1), 30, legendY + 12);
+                    legendY += 25;
+                }
+            });
+        }
+
+        function displayHarmonyInfo(harmony, generator) {
+            const harmonyInfo = document.getElementById('harmonyInfo');
+            let infoHTML = '<h3>🎼 하모니 분석 정보</h3>';
+            
+            // 각 파트별 정보
+            infoHTML += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">';
+            
+            Object.entries(harmony).forEach(([instrument, notes]) => {
+                if (!notes || notes.length === 0) return;
+                
+                const pitches = notes.map(note => note.pitch).filter(p => p !== undefined);
+                if (pitches.length === 0) return;
+                
+                const minPitch = Math.min(...pitches);
+                const maxPitch = Math.max(...pitches);
+                const avgPitch = pitches.reduce((a, b) => a + b, 0) / pitches.length;
+                
+                infoHTML += `
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                        <h4 style="color: #feca57; margin: 0 0 10px 0;">${instrument.charAt(0).toUpperCase() + instrument.slice(1)}</h4>
+                        <p><strong>최저음:</strong> ${midiToNoteName(minPitch)} (${minPitch})</p>
+                        <p><strong>최고음:</strong> ${midiToNoteName(maxPitch)} (${maxPitch})</p>
+                        <p><strong>평균음:</strong> ${midiToNoteName(Math.round(avgPitch))} (${Math.round(avgPitch)})</p>
+                        <p><strong>음표 수:</strong> ${notes.length}</p>
+                    </div>
+                `;
+            });
+            
+            infoHTML += '</div>';
+            
+            // 전체 하모니 통계
+            const quality = generator.evaluateHarmonyQuality(harmony);
+            const totalNotes = Object.values(harmony).reduce((sum, notes) => sum + (notes ? notes.length : 0), 0);
+            
+            infoHTML += `
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin-top: 20px;">
+                    <h4>📊 전체 통계</h4>
+                    <p><strong>하모니 품질:</strong> ${(quality * 100).toFixed(1)}%</p>
+                    <p><strong>전체 음표 수:</strong> ${totalNotes}</p>
+                    <p><strong>활성 파트:</strong> ${Object.values(harmony).filter(notes => notes && notes.length > 0).length}/4</p>
+                    <p><strong>조:</strong> ${midiToNoteName(generator.key + 60)} ${generator.scale}</p>
+                </div>
+            `;
+            
+            harmonyInfo.innerHTML = infoHTML;
+            harmonyInfo.style.display = 'block';
+        }
+
+        // 파일 다운로드 함수들
+        function downloadMIDI() {
+            if (!currentHarmony) {
+                alert('먼저 하모니를 생성해주세요.');
+                return;
+            }
+
+            // 간단한 MIDI 바이트 생성 (실제 MIDI 형식)
+            const midiData = createMIDIData(currentHarmony);
+            const blob = new Blob([midiData], { type: 'audio/midi' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai_harmony.mid';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadWAV() {
+            if (!currentHarmony) {
+                alert('먼저 하모니를 생성해주세요.');
+                return;
+            }
+
+            // WAV 데이터 생성
+            const audioData = synthesizeHarmonyToWAV(currentHarmony);
+            const blob = new Blob([audioData], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai_harmony.wav';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function createMIDIData(harmony) {
+            // 간단한 MIDI 파일 구조 생성
+            const header = new Uint8Array([
+                0x4D, 0x54, 0x68, 0x64, // "MThd"
+                0x00, 0x00, 0x00, 0x06, // Header length
+                0x00, 0x01, // Format type 1
+                0x00, 0x04, // 4 tracks
+                0x01, 0xE0  // 480 ticks per quarter note
+            ]);
+
+            // 트랙 데이터는 실제 구현에서는 더 복잡하지만, 
+            // 여기서는 간단한 형태로 생성
+            const trackData = new Uint8Array(1000); // 임시 크기
+            
+            // 헤더와 기본 트랙 데이터 결합
+            const result = new Uint8Array(header.length + trackData.length);
+            result.set(header, 0);
+            result.set(trackData, header.length);
+            
+            return result;
+        }
+
+        function synthesizeHarmonyToWAV(harmony) {
+            const sampleRate = 44100;
+            const beatDuration = 60 / parseInt(document.getElementById('tempoValue').textContent);
+            const maxLength = Math.max(...Object.values(harmony).map(notes => notes ? notes.length : 0));
+            const totalDuration = maxLength * beatDuration;
+            const totalSamples = Math.floor(totalDuration * sampleRate);
+            
+            let mixedAudio = new Float32Array(totalSamples);
+            
+            // 각 파트 합성
+            Object.entries(harmony).forEach(([instrument, notes]) => {
+                if (!notes) return;
+                
+                const volume = parseFloat(document.getElementById(instrument + 'Volume').value) / 100;
+                let currentTime = 0;
+                
+                notes.forEach(note => {
+                    if (note.pitch && note.duration) {
+                        const frequency = midiToFreq(note.pitch);
+                        const noteDuration = note.duration * beatDuration;
+                        const noteSamples = Math.floor(noteDuration * sampleRate);
+                        const startSample = Math.floor(currentTime * sampleRate);
+                        
+                        for (let i = 0; i < noteSamples && startSample + i < totalSamples; i++) {
+                            const t = i / sampleRate;
+                            
+                            // 엔벨로프
+                            let envelope = 1;
+                            const attackTime = Math.min(0.1, noteDuration * 0.1);
+                            const releaseTime = Math.min(0.1, noteDuration * 0.1);
+                            
+                            if (t < attackTime) {
+                                envelope = t / attackTime;
+                            } else if (t > noteDuration - releaseTime) {
+                                envelope = (noteDuration - t) / releaseTime;
+                            }
+                            
+                            // 사인파 생성 (하모닉 추가)
+                            const wave = Math.sin(2 * Math.PI * frequency * t) + 
+                                       0.3 * Math.sin(2 * Math.PI * frequency * 2 * t) +
+                                       0.1 * Math.sin(2 * Math.PI * frequency * 3 * t);
+                            
+                            mixedAudio[startSample + i] += wave * envelope * volume * 0.1 * (note.velocity / 127);
+                        }
+                        
+                        currentTime += noteDuration;
+                    }
+                });
+            });
+            
+            // 클리핑 방지
+            const maxVal = Math.max(...Array.from(mixedAudio).map(Math.abs));
+            if (maxVal > 1) {
+                mixedAudio = mixedAudio.map(sample => sample / maxVal * 0.9);
+            }
+            
+            // WAV 헤더 생성
+            const buffer = new ArrayBuffer(44 + totalSamples * 2);
+            const view = new DataView(buffer);
+            
+            // WAV 헤더
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + totalSamples * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, totalSamples * 2, true);
+            
+            // 오디오 데이터
+            let offset = 44;
+            for (let i = 0; i < totalSamples; i++) {
+                const sample = Math.max(-1, Math.min(1, mixedAudio[i]));
+                view.setInt16(offset, sample * 0x7FFF, true);
+                offset += 2;
+            }
+            
+            return buffer;
+        }
+
+        // 실시간 시각화 (재생 중)
+        function startVisualization() {
+            const canvas = document.getElementById('visualizer');
+            const ctx = canvas.getContext('2d');
+            
+            function animate() {
+                if (!isPlaying) return;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 간단한 파형 시각화
+                const time = audioContext.currentTime;
+                const waveHeight = canvas.height / 8;
+                
+                ['soprano', 'alto', 'tenor', 'bass'].forEach((inst, index) => {
+                    const y = (index + 1) * (canvas.height / 5);
+                    const volume = parseFloat(document.getElementById(inst + 'Volume').value) / 100;
+                    
+                    ctx.strokeStyle = {
+                        soprano: '#ff6b6b',
+                        alto: '#4ecdc4', 
+                        tenor: '#45b7d1',
+                        bass: '#96ceb4'
+                    }[inst];
+                    
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    
+                    for (let x = 0; x < canvas.width; x += 2) {
+                        const freq = 440 + Math.sin(time * 2 + x * 0.01) * 200;
+                        const wave = Math.sin(x * 0.02 + time * freq * 0.001) * waveHeight * volume;
+                        
+                        if (x === 0) {
+                            ctx.moveTo(x, y + wave);
+                        } else {
+                            ctx.lineTo(x, y + wave);
+                        }
+                    }
+                    
+                    ctx.stroke();
+                    
+                    // 파트 이름 표시
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(inst.charAt(0).toUpperCase() + inst.slice(1), 10, y - 10);
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // 고급 기능들
+        function generateVariation() {
+            if (!currentHarmony) {
+                alert('먼저 하모니를 생성해주세요.');
+                return;
+            }
+            
+            // 기존 하모니를 기반으로 변주 생성
+            const key = parseInt(document.getElementById('keySelect').value);
+            const scale = document.getElementById('scaleSelect').value;
+            const generator = new HarmonyGenerator(key, scale);
+            
+            // 변주된 하모니 생성
+            const variation = generator.generateFourPartHarmony(
+                parseInt(document.getElementById('lengthSlider').value),
+                parseInt(document.getElementById('chordLengthSlider').value)
+            );
+            
+            currentHarmony = variation;
+            visualizeHarmony(variation);
+            displayHarmonyInfo(variation, generator);
+        }
+
+        function randomizeSettings() {
+            // 랜덤한 설정으로 변경
+            document.getElementById('keySelect').value = Math.floor(Math.random() * 12);
+            document.getElementById('scaleSelect').value = Math.random() > 0.5 ? 'major' : 'minor';
+            document.getElementById('lengthSlider').value = 24 + Math.floor(Math.random() * 24);
+            document.getElementById('chordLengthSlider').value = 6 + Math.floor(Math.random() * 8);
+            document.getElementById('tempoSlider').value = 100 + Math.floor(Math.random() * 60);
+            
+            // UI 업데이트
+            document.getElementById('lengthValue').textContent = document.getElementById('lengthSlider').value;
+            document.getElementById('chordLengthValue').textContent = document.getElementById('chordLengthSlider').value;
+            document.getElementById('tempoValue').textContent = document.getElementById('tempoSlider').value;
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        if (isPlaying) {
+                            stopHarmony();
+                        } else {
+                            playHarmony();
+                        }
+                        break;
+                    case 'g':
+                        e.preventDefault();
+                        generateHarmony();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        randomizeSettings();
+                        break;
+                }
+            }
+        });
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('AI 하모니 생성기가 로드되었습니다.');
+            
+            // Web Audio 컨텍스트 초기화를 위한 사용자 상호작용 대기
+            document.body.addEventListener('click', function initAudio() {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                document.body.removeEventListener('click', initAudio);
+            }, { once: true });
+        });
+
+        // 추가 유틸리티 함수들
+        function exportHarmonyData() {
+            if (!currentHarmony) {
+                alert('먼저 하모니를 생성해주세요.');
+                return;
+            }
+            
+            const data = JSON.stringify(currentHarmony, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'harmony_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function loadHarmonyData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const loadedHarmony = JSON.parse(e.target.result);
+                    
+                    // Note 객체로 재구성
+                    Object.keys(loadedHarmony).forEach(part => {
+                        loadedHarmony[part] = loadedHarmony[part].map(note => 
+                            new Note(note.pitch, note.duration, note.velocity)
+                        );
+                    });
+                    
+                    currentHarmony = loadedHarmony;
+                    
+                    const generator = new HarmonyGenerator();
+                    visualizeHarmony(loadedHarmony);
+                    displayHarmonyInfo(loadedHarmony, generator);
+                    
+                    document.getElementById('playerSection').style.display = 'block';
+                    
+                    alert('하모니 데이터가 성공적으로 로드되었습니다!');
+                } catch (error) {
+                    alert('파일을 읽는 중 오류가 발생했습니다: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 재생 중 시각화 시작
+        function playHarmonyWithVisualization() {
+            playHarmony();
+            if (isPlaying) {
+                startVisualization();
+            }
+        }
+
+        // 함수 재정의 (시각화 포함)
+        const originalPlayHarmony = playHarmony;
+        playHarmony = function() {
+            originalPlayHarmony();
+            if (isPlaying) {
+                startVisualization();
+            }
+        };
+    </script>
+
+    <!-- 추가 컨트롤 버튼들 -->
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="generateVariation()" style="background: linear-gradient(45deg, #9c27b0, #673ab7);">
+            🎭 변주 생성
+        </button>
+        <button onclick="randomizeSettings()" style="background: linear-gradient(45deg, #ff9800, #f57c00);">
+            🎲 랜덤 설정
+        </button>
+        <button onclick="exportHarmonyData()" style="background: linear-gradient(45deg, #607d8b, #455a64);">
+            📋 데이터 내보내기
+        </button>
+    </div>
+
+    <!-- 파일 로드 -->
+    <div style="text-align: center; margin-top: 15px;">
+        <input type="file" id="harmonyFile" accept=".json" onchange="loadHarmonyData(event)" style="display: none;">
+        <button onclick="document.getElementById('harmonyFile').click()" style="background: linear-gradient(45deg, #2196f3, #1976d2);">
+            📁 하모니 데이터 로드
+        </button>
+    </div>
+
+    <!-- 사용법 안내 -->
+    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.1);">
+        <h3>🎹 사용법</h3>
+        <ul style="text-align: left;">
+            <li><strong>Ctrl/Cmd + Space:</strong> 재생/정지</li>
+            <li><strong>Ctrl/Cmd + G:</strong> 하모니 생성</li>
+            <li><strong>Ctrl/Cmd + R:</strong> 랜덤 설정</li>
+            <li><strong>Solo 버튼:</strong> 개별 파트만 재생</li>
+            <li><strong>볼륨 슬라이더:</strong> 각 파트의 음량 조절</li>
+        </ul>
+    </div>
+</body>
+</html>
